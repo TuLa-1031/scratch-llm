@@ -1,69 +1,100 @@
-# GQA: Grouped Query Attention
+# GQA Comparison Benchmark
 
-This experiment implements a grouped-query attention (GQA) variant of a small GPT-style transformer in PyTorch. The goal is to study how multiple query heads can share a smaller set of key/value heads, reducing the memory footprint of the attention projection while preserving model quality and allowing efficient KV-cache usage.
+This folder implements a minimal grouped-query attention (GQA) transformer and compares it against a standard no-GQA baseline imported from the KV-cache experiment.
 
-## What is GQA?
+The goal is to study the effect of reducing the number of key/value heads while keeping the same number of query heads, and to benchmark generation speed with and without KV-cache reuse.
 
-In standard multi-head attention, each query head has its own key and value projection. In GQA, the model uses:
+## What this project compares
 
-- `n_heads` query heads
-- `kv_groups` shared key/value groups
-- each group serving multiple query heads
+The script builds two models:
 
-This means the K/V projection size is reduced from:
+- `GQA`: uses grouped query attention with `kv_groups=2`
+- `No GQA`: uses the standard multi-head attention implementation from `kv_cache.main.LLM`
 
-- `n_heads * head_dim`
+Both models are initialized with the same base configuration, except that the GQA model uses fewer K/V projections and repeats the shared K/V tensors across query heads.
+
+## Model setup
+
+The key configuration is:
+
+- vocab size: `50257`
+- context length: `1024`
+- embedding dim: `768`
+- attention heads: `12`
+- transformer layers: `12`
+- dropout: `0.1`
+- GQA groups: `2`
+
+In GQA, the attention projection is reduced from:
+
+- `n_heads * head_dim` for K/V
 
 to:
 
 - `kv_groups * head_dim`
 
-and the shared K/V vectors are repeated across the corresponding query heads before the attention score computation.
+and the grouped K/V states are repeated to match the full query-head count before attention is computed.
 
-## Implementation notes
+## Files in this folder
 
-The implementation in this folder includes:
+- `main.py`: GQA implementation, baseline import, generation loop, and benchmark runner
+- `gqa.ipynb`: notebook version of the same experiment
 
-- `Attention`: grouped-query attention with optional KV-cache support
-- `TransformerBlock`: residual block with attention + feed-forward network
-- `LLM`: token embedding, positional embedding, stacked transformer blocks, and output head
-- `generate_text_simple_cached`: autoregressive generation loop with and without KV caching
+## Run it
 
-Key logic:
+From the repository root:
 
-- Query heads are produced as usual with `W_query`
-- Key/value projections are produced with fewer heads: `kv_groups * head_dim`
-- Shared K/V are expanded back to match the full head count using `repeat_interleave`
-- The attention mask enforces causal decoding in generation
-- Optional KV cache stores previous key/value states for faster incremental generation
+```bash
+python GQA/main.py
+```
 
+If you are inside the project environment, this will run both models on the same prompt and print timing and throughput for:
 
-## Example benchmark run
+1. GQA with KV cache
+2. GQA without KV cache
+3. No-GQA baseline with KV cache
+4. No-GQA baseline without KV cache
 
-This project was run on Apple Silicon with MPS for a small GPT-style setup. Example output from the current implementation:
+## Benchmark result from the current run
+
+The script uses the GPT-2 tokenizer and generates from the prompt:
+
+```text
+Hello, I am
+```
+
+This run produced the following timings on the current machine:
 
 ```text
 Encoded input text: [15496, 11, 314, 716]
 encoded_tensor.shape: torch.Size([1, 4])
 
-Time: 2.07 sec
-98 tokens/sec
-Current memory allocated: 0.63 GB
+GQA:
+
+Time: 1.39 sec
+146 tokens/sec
+Current memory allocated: 1.29 GB
 
 NO CACHE:
 
-Time: 4.42 sec
-46 tokens/sec
-Current memory allocated: 0.63 GB
+Time: 3.84 sec
+53 tokens/sec
+Current memory allocated: 1.29 GB
+
+No GQA:
+
+Time: 1.59 sec
+128 tokens/sec
+Current memory allocated: 1.31 GB
+
+NO CACHE:
+
+Time: 3.23 sec
+63 tokens/sec
 ```
 
-This shows the cached variant is faster because it avoids recomputing all prior attention keys and values at each generation step.
+This confirms the expected pattern: the cached decoding path is substantially faster than recomputing the entire context at each step, while the GQA model remains competitive with the no-GQA baseline in this minimal setup.
 
-## Summary
+## Notes
 
-This experiment is a practical, minimal version of grouped-query attention. It is designed for learning and exploration rather than production training and is especially useful for understanding:
-
-- how attention is structured in modern LLMs
-- how GQA reduces K/V memory cost
-- how KV cache accelerates autoregressive decoding
-- how to compare cached vs non-cached generation performance
+This is a compact educational implementation intended for understanding how GQA changes the attention mechanism and how KV caching affects autoregressive decoding. It is not meant to be a production-scale model or training setup.

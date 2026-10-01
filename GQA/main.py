@@ -2,8 +2,10 @@ import time
 
 import torch
 import torch.nn as nn
-from einops import rearrange
+from einops import rearrange, repeat
 import tiktoken
+
+from kv_cache.main import LLM as NoGQALLM
 
 LLM_CONFIG = {
     "vocab_size": 50257,
@@ -64,8 +66,8 @@ class Attention(nn.Module):
                 self.v_cache = torch.cat([self.v_cache, v], dim=2)
             k, v = self.k_cache, self.v_cache
 
-        k = k.repeat_interleave(self.group_size, dim=1)
-        v = v.repeat_interleave(self.group_size, dim=1)
+        k = repeat(k, "b h t k -> b (h2 h) t k", h2 = self.group_size)
+        v = repeat(v, "b h t v -> b (h2 h) t v", h2 = self.group_size)
         nQ = q.shape[-2]
         nK = k.shape[-2]
 
@@ -189,63 +191,69 @@ def generate_text_simple_cached(model, idx, max_new_tokens, context_size=None, u
 
 
 def main():
-    torch.manual_seed(123)
-    model = LLM(LLM_CONFIG)
     device = torch.device("mps" if torch.mps.is_available() else "cpu")
-    model.to(device)
-    model.eval()
-
     start_context = "Hello, I am"
     tokenizer = tiktoken.get_encoding("gpt2")
     encoded = tokenizer.encode(start_context)
     encoded_tensor = torch.tensor(encoded, device=device).unsqueeze(0)
 
+    no_gqa_cfg = {k: v for k, v in LLM_CONFIG.items() if k != "kv_groups"}
+
+    models = {
+        "GQA": LLM(LLM_CONFIG).to(device),
+        "No GQA": NoGQALLM(no_gqa_cfg).to(device),
+    }
+
     print("Encoded input text:", encoded)
     print("encoded_tensor.shape:", encoded_tensor.shape)
 
-    if torch.mps.is_available():
-        torch.mps.synchronize()
-    start = time.time()
+    for name, model in models.items():
+        model.eval()
+        print(f"\n{name}:\n")
 
-    token_ids = generate_text_simple_cached(
-        model=model,
-        idx=encoded_tensor,
-        max_new_tokens=200,
-    )
+        if torch.mps.is_available():
+            torch.mps.synchronize()
+        start = time.time()
 
-    if torch.mps.is_available():
-        torch.mps.synchronize()
-    total_time = time.time() - start
+        token_ids = generate_text_simple_cached(
+            model=model,
+            idx=encoded_tensor.clone(),
+            max_new_tokens=200,
+        )
 
-    print(f"\nTime: {total_time:.2f} sec")
-    print(f"{int(len(token_ids[0]) / total_time)} tokens/sec")
-    if torch.mps.is_available():
-        mem_bytes = torch.mps.current_allocated_memory()
-        mem_gb = mem_bytes / (1024 ** 3)
-        print(f"Current memory allocated: {mem_gb:.2f} GB")
+        if torch.mps.is_available():
+            torch.mps.synchronize()
+        total_time = time.time() - start
 
-    print("\nNO CACHE:\n")
-    if torch.mps.is_available():
-        torch.mps.synchronize()
-    start = time.time()
+        print(f"Time: {total_time:.2f} sec")
+        print(f"{int(len(token_ids[0]) / total_time)} tokens/sec")
+        if torch.mps.is_available():
+            mem_bytes = torch.mps.current_allocated_memory()
+            mem_gb = mem_bytes / (1024 ** 3)
+            print(f"Current memory allocated: {mem_gb:.2f} GB")
 
-    token_ids = generate_text_simple_cached(
-        model=model,
-        idx=encoded_tensor,
-        max_new_tokens=200,
-        use_cache=False,
-    )
+        print("\nNO CACHE:\n")
+        if torch.mps.is_available():
+            torch.mps.synchronize()
+        start = time.time()
 
-    if torch.mps.is_available():
-        torch.mps.synchronize()
-    total_time = time.time() - start
+        token_ids = generate_text_simple_cached(
+            model=model,
+            idx=encoded_tensor.clone(),
+            max_new_tokens=200,
+            use_cache=False,
+        )
 
-    print(f"\nTime: {total_time:.2f} sec")
-    print(f"{int(len(token_ids[0]) / total_time)} tokens/sec")
-    if torch.mps.is_available():
-        mem_bytes = torch.mps.current_allocated_memory()
-        mem_gb = mem_bytes / (1024 ** 3)
-        print(f"Current memory allocated: {mem_gb:.2f} GB")
+        if torch.mps.is_available():
+            torch.mps.synchronize()
+        total_time = time.time() - start
+
+        print(f"Time: {total_time:.2f} sec")
+        print(f"{int(len(token_ids[0]) / total_time)} tokens/sec")
+        if torch.mps.is_available():
+            mem_bytes = torch.mps.current_allocated_memory()
+            mem_gb = mem_bytes / (1024 ** 3)
+            print(f"Current memory allocated: {mem_gb:.2f} GB")
 
 
 if __name__ == "__main__":
