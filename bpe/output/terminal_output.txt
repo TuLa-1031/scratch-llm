@@ -1,0 +1,83 @@
+(ltlam) letunglam@ltlam bpe % python3 train_bpe.py 
+         5177 function calls (5130 primitive calls) in 34.950 seconds
+
+   Ordered by: cumulative time
+   List reduced from 358 to 15 due to restriction <15>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       20   34.088    1.704   34.088    1.704 {method 'acquire' of '_thread.lock' objects}
+       12    0.000    0.000   34.025    2.835 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/process.py:614(_chain_from_iterable_of_lists)
+       12    0.000    0.000   34.025    2.835 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/_base.py:612(result_iterator)
+       11    0.000    0.000   34.025    3.093 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/_base.py:314(_result_or_cancel)
+        3    0.000    0.000   34.025   11.342 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/threading.py:295(wait)
+       11    0.000    0.000   34.025    3.093 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/_base.py:428(result)
+        1    0.000    0.000    0.857    0.857 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/process.py:813(map)
+        1    0.001    0.001    0.857    0.857 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/_base.py:583(map)
+        1    0.000    0.000    0.856    0.856 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/_base.py:608(<listcomp>)
+       11    0.000    0.000    0.856    0.078 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/process.py:788(submit)
+       11    0.000    0.000    0.833    0.076 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/process.py:754(_adjust_process_count)
+       11    0.000    0.000    0.833    0.076 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/concurrent/futures/process.py:777(_spawn_process)
+       11    0.000    0.000    0.832    0.076 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/multiprocessing/process.py:110(start)
+       11    0.000    0.000    0.831    0.076 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/multiprocessing/context.py:285(_Popen)
+       11    0.000    0.000    0.830    0.075 /Users/letunglam/miniconda3/envs/ltlam/lib/python3.11/multiprocessing/popen_spawn_posix.py:30(__init__)
+
+
+         76905607 function calls in 10.994 seconds
+
+   Ordered by: cumulative time
+   List reduced from 16 to 15 due to restriction <15>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.907    0.907   10.994   10.994 /Users/letunglam/scratch-llm/bpe/train_bpe.py:118(merges)
+     2743    4.827    0.002    9.293    0.003 {built-in method builtins.max}
+ 69396621    4.465    0.000    4.465    0.000 /Users/letunglam/scratch-llm/bpe/train_bpe.py:145(<lambda>)
+   238399    0.399    0.000    0.513    0.000 /Users/letunglam/scratch-llm/bpe/train_bpe.py:100(_merge)
+        1    0.101    0.101    0.122    0.122 /Users/letunglam/scratch-llm/bpe/train_bpe.py:84(_build_index)
+  1260579    0.096    0.000    0.096    0.000 {method 'discard' of 'set' objects}
+  3291469    0.088    0.000    0.088    0.000 {built-in method builtins.len}
+  1394942    0.068    0.000    0.068    0.000 {method 'add' of 'set' objects}
+  1260912    0.041    0.000    0.041    0.000 {method 'append' of 'list' objects}
+    59933    0.003    0.000    0.003    0.000 {method 'get' of 'dict' objects}
+        1    0.000    0.000    0.000    0.000 /Users/letunglam/scratch-llm/bpe/train_bpe.py:133(<dictcomp>)
+        1    0.000    0.000    0.000    0.000 {method 'update' of 'dict' objects}
+        2    0.000    0.000    0.000    0.000 {built-in method time.perf_counter}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+        1    0.000    0.000    0.000    0.000 {method 'encode' of 'str' objects}
+
+
+
+=== Performance ===
+File size:             2124.55 MB
+Total time:             46.02 s
+Pre-tokenization time:  35.02 s
+Merge training time:    11.00 s
+Throughput:             46.16 MB/s
+Pretokenize throughput: 60.66 MB/s
+
+=== Memory ===
+Current RSS: 152.45 MB
+Peak RSS (self.ru_maxrss): 152.47 MB
+
+=== Token Length Statistics (bytes) ===
+Min:    1
+Mean:   4.56
+Median: 5.00
+P90:    7.00
+P95:    8.00
+P99:    10.00
+Max:    13
+
+=== Token Length Distribution ===
+9-16 bytes  :    108 (3.60%)
+1 byte      :    256 (8.53%)
+2-4 bytes   :   1236 (41.20%)
+5-8 bytes   :   1400 (46.67%)
+
+=== Correctness ===
+Requested vocab size: 3000
+Actual vocab size:    3000
+Requested merges:     2743
+Actual merges:        2743
+All byte tokens exist: True
+Unique vocab IDs:      True
+Unique vocab values:   True

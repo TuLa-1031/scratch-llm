@@ -40,3 +40,6 @@ ENV/
 *.pth
 *.ckpt
 *.safetensors
+
+
+data/

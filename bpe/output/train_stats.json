@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-10-19T08:18:27.391444",
+  "file": "data/TinyStoriesV2-GPT4-train.txt",
+  "file_size_mb": 2124.550973892212,
+  "num_processes": 11,
+  "num_chunks": 11,
+  "vocab_size": 3000,
+  "num_merges": 2743,
+  "unique_pre_token_sequences": 59933,
+  "pretokenize_time_s": 35.02310995899825,
+  "merge_time_s": 10.999973792000674,
+  "total_time_s": 46.02448116699816,
+  "memory_before_mb": 37.578125,
+  "memory_after_mb": 152.390625
+}
