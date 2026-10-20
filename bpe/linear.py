@@ -27,5 +27,9 @@ class Linear(nn.Module):
         self,
         x: torch.Tensor
     ) -> torch.Tensor:
-        return einsum(x, self.W,
-                      "... d_in, d_out d_in -> ... d_out")
+        y =  einx.dot(
+                    "... d_in, d_out d_in"
+                    "-> ... d_out",
+                    x, self.W,
+                )
+        return y
