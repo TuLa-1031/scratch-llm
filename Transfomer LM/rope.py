@@ -14,8 +14,8 @@ class RotaryPositionalEmbedding(nn.Module):
         freq = 1.0 / theta ** (torch.arange(0, d_k, 2, device=device)/d_k)
         pos = torch.arange(start=0, end=max_seq_len, device=device)
         angles = torch.outer(pos, freq)
-        self.register_buffer("cos", torch.cos(angles))
-        self.register_buffer("sin", torch.sin(angles))
+        self.register_buffer("cos", torch.cos(angles), persistent=False) # persistent=False excludes buffers from state_dict.
+        self.register_buffer("sin", torch.sin(angles), persistent=False)
         
     def forward(
         self,
