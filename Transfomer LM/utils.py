@@ -1,8 +1,31 @@
 import torch
 from torch import Tensor
-from jaxtyping import Float, Bool
+from jaxtyping import Float, Bool, Int
 import einx
 import math
+
+def cross_entroy(
+    inputs: Float[Tensor, " batch_size vocab_size"],
+    targets: Int[Tensor, " batch_size"]
+) -> torch.Tensor:
+    inputs = inputs - torch.max(inputs, dim=-1, keepdim=True).values
+    loss = torch.mean(torch.log(torch.sum(torch.exp(inputs), dim=-1)) - inputs[torch.arange(inputs.shape[0]), targets])
+    return loss
+
+
+def lr_cosin_schedule(
+    t: int,
+    a_max: float,
+    a_min: float, 
+    Tw: int, 
+    Tc: int
+) -> float:
+    if (t < Tw):
+        alpha_t = t/Tw * a_max
+    elif (Tw <= t and t <= Tc):
+        alpha_t = a_min + 0.5 * (1 + math.cos( ((t - Tw) / (Tc - Tw)) * math.pi)) * (a_max - a_min)
+    else: alpha_t = a_min
+    return alpha_t
 
 
 def softmax(

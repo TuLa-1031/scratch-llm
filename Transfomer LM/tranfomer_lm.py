@@ -8,7 +8,7 @@ from transformer_block import trf_block
 from embedding import Embedding
 from rmsnorm import RMSNorm
 from linear import Linear
-from softmax import softmax
+from utils import softmax
 
 class transformerLanguageModel(nn.Module):
     def __init__(

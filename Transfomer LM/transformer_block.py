@@ -5,7 +5,7 @@ from jaxtyping import Float, Bool, Int
 from einops import rearrange
 
 from multihead_self_attention import casual_multi_head_self_attention_with_rope
-from positionwise_feedforward import SwiGLU
+from postionwise_feedforward import SwiGLU
 from rmsnorm import RMSNorm
 
 class trf_block(nn.Module):

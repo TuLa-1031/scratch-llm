@@ -5,7 +5,7 @@ from jaxtyping import Float, Bool, Int
 from linear import Linear
 from einops import rearrange
 
-from functions import softmax, scaled_dot_product_attention
+from utils import softmax, scaled_dot_product_attention
 from rope import RotaryPositionalEmbedding
 
 
