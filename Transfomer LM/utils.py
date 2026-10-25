@@ -59,3 +59,19 @@ def scaled_dot_product_attention(
         score, V
     )
     return out
+
+def grad_clipping(
+    parameters: Iterable[torch.nn.Parameter],
+    max_l2_norm: float,
+    eps: float = 1e-6,
+) -> None:
+    parameters = list(parameters)
+    grads = [p.grad for p in parameters if p.grad is not None]
+    if not grads:
+        return
+    total_norms = torch.sqrt(sum(torch.sum(g**2) for g in grads))
+    if total_norms >= max_l2_norm:
+        scale = max_l2_norm / (total_norms + eps)
+        for g in grads:
+            g.mul_(scale)
+    return 
