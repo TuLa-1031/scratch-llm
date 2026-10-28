@@ -29,7 +29,7 @@ if __name__ == "__main__":
         device = "mps"
     else:
         device = "cpu"
-
+        
     model = transformerLanguageModel(
         vocab_size=args.vocab_size,
         context_length=args.context_length,
