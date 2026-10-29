@@ -20,15 +20,16 @@ if __name__ == "__main__":
 
     parser.add_argument("--w", type=int, required=True)
     parser.add_argument("--mode", type=str, required=True)
+    parser.add_argument("--mixed_precision", type=Bool, required=True)
 
     args = parser.parse_args()
 
     if torch.cuda.is_available():
         device = "cuda"
-    elif torch.backends.mps.is_available():
-        device = "mps"
     else:
         device = "cpu"
+
+    dtype = torch.bfloat16
         
     model = transformerLanguageModel(
         vocab_size=args.vocab_size,
@@ -57,7 +58,11 @@ if __name__ == "__main__":
     def run_step():
         if args.mode == "forward":
             with torch.no_grad():
-                logits = model(x)
+                if args.mixed_precision:
+                    with torch.autocast(device_type="cuda", dtype=dtype):
+                        logits = model(x)
+                else:
+                    logits = model(x)
                 loss = cross_entroy(
                     logits.reshape(-1, logits.size(-1)),
                     y.reshape(-1),
@@ -67,7 +72,11 @@ if __name__ == "__main__":
 
         elif args.mode =="backward":
             optimizer.zero_grad(set_to_none=True)
-            logits = model(x)
+            if args.mixed_precision:
+                with torch.autocast(device_type="cuda", dtype=dtype):
+                    logits = model(x)
+            else:
+                logits = model(x)
             loss = cross_entroy(
                 logits.reshape(-1, logits.size(-1)),
                 y.reshape(-1),
@@ -78,7 +87,11 @@ if __name__ == "__main__":
 
         elif args.mode == "optimizer":
             optimizer.zero_grad(set_to_none=True)
-            logits = model(x)
+            if args.mixed_precision:
+                with torch.autocast(device_type="cuda", dtype=dtype):
+                    logits = model(x)
+            else:
+                logits = model(x)
             loss = cross_entroy(
                 logits.reshape(-1, logits.size(-1)),
                 y.reshape(-1),
@@ -87,19 +100,21 @@ if __name__ == "__main__":
             optimizer.step()
             del logits
             del loss
-        torch.mps.synchronize()
+        torch.cuda.synchronize()
 
 
     for _ in range(args.w):
         run_step()
 
-
+    torch.cuda.memory._record_memory_history(max_entries=1000000)
     for step in range(10):
         start = timeit.default_timer()
         run_step()
         time_run.append(timeit.default_timer() - start)
 
-
+    
+    torch.cuda.memory._dump_snapshot("memory_snapshot.pickle")
+    torch.cuda.memory._record_memory_history(enabled=None)
     print(f"Time run: {time_run}")
     sum_time = 0
     for t in time_run:
