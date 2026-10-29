@@ -218,7 +218,7 @@ class trf_block(nn.Module):
         num_heads: int,
         d_ff: int,
         max_seq_len: int,
-        theta: int,
+        theta: float | None = 10000.0,
     ):
         super().__init__()
         self.mha = casual_multi_head_self_attention_with_rope(

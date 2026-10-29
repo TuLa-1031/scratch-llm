@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: transformer-lm
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.13
+Description-Content-Type: text/markdown
+Requires-Dist: humanfriendly
+Requires-Dist: matplotlib
+Requires-Dist: numpy
+Requires-Dist: pytest>=8
+Requires-Dist: regex>=2026.3.32
+Requires-Dist: torch~=2.11.0
+Requires-Dist: tqdm>=4.67.1
+Requires-Dist: wandb>=0.19.7
+Requires-Dist: pandas>=2
+Requires-Dist: ty>=0.0.29
+Requires-Dist: ruff>=0.15.10
+Requires-Dist: jaxtyping
+Requires-Dist: einops
+Requires-Dist: einx

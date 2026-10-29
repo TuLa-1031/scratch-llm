@@ -1,0 +1,29 @@
+[project]
+name = "transformer-lm"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "humanfriendly",
+    "matplotlib",
+    "numpy",
+    "pytest>=8",
+    "regex>=2026.3.32",
+    "torch~=2.11.0",
+    "tqdm>=4.67.1",
+    "wandb>=0.19.7",
+    "pandas>=2",
+    "ty>=0.0.29",
+    "ruff>=0.15.10",
+    "jaxtyping",
+    "einops",
+    "einx",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["model", "tokenizer", "utils", "optimizer", "main"]
